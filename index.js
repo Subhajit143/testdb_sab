@@ -1,12 +1,13 @@
-require("dotenv").config();
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
+import express from "express";
+import mysql from "mysql2";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(express.json());
 
-// MySQL Connection
+// Create DB connection
 const db = mysql.createConnection({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
@@ -15,27 +16,30 @@ const db = mysql.createConnection({
   port: process.env.MYSQL_PORT
 });
 
+// Connect to DB
 db.connect((err) => {
   if (err) {
-    console.error("MySQL Connection Error: ", err);
-    return;
+    console.error("MySQL Connection Failed:", err);
+  } else {
+    console.log("MySQL Connected Successfully!");
   }
-  console.log(" MySQL Connected Successfully!");
 });
 
-// GET all users API
-app.get('/users', (req, res) => {
-  db.query("SELECT * FROM users", (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Database error" });
-    }
+// Test route
+app.get("/", (req, res) => {
+  res.send("API Working!");
+});
 
-    res.json(results);  // <-- MUST be valid JSON
+// Get all users API
+app.get("/users", (req, res) => {
+  db.query("SELECT * FROM users", (err, result) => {
+    if (err) return res.status(500).json({ error: err });
+    res.json(result);
   });
 });
 
-
-// Start Server
-app.listen(process.env.PORT, () => {
-  console.log(`Server running at http://localhost:${process.env.PORT}`);
+// Server Start
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
